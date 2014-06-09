@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <xsd:annotation>
+        <xsd:documentation source="http://phpunit.de/manual/current/en/appendixes.configuration.html" xml:lang="en">
+            This Schema file defines the rules by which the XML configuration file of PHPUnit may be structured. Based on PHPUnit schema
+        </xsd:documentation>
+    </xsd:annotation>
+
+    <!--Type definitions-->
+    <xsd:simpleType name="Boolean">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="true"/>
+            <xsd:enumeration value="false"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!--Testsuites element-->
+    <xsd:attributeGroup name="phpVersionGroup">
+        <xsd:attribute name="phpVersion" type="xsd:string" default="PHP_VERSION">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Using the phpVersion a required PHP version can be specified.&lt;br /&gt;&lt;br /&gt; Default: PHP_VERSION &lt;br /&gt; Example: phpVersion="5.3.0"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="phpVersionOperator" type="xsd:string" default="&gt;=">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Use the phpVersionOperator to compare to a required PHP version specified with the phpVersion attribute.&lt;br /&gt;&lt;br /&gt; Default '&gt;='</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:attributeGroup>
+
+    <xsd:group name="pathGroup">
+        <xsd:sequence>
+            <xsd:element name="directory" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Directory to scan for tests</xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:anyURI">
+                            <xsd:attribute type="xsd:string" name="prefix" default="">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">Test only files which begin with the specified prefix &lt;br /&gt;&lt;br /&gt; Default: ''</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute type="xsd:string" name="suffix" default="Test.php">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">Test only files which end with the specified suffix &lt;br /&gt;&lt;br /&gt; Default: 'Test.php'</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attributeGroup ref="phpVersionGroup"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="file" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">File to add to the test suite</xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:anyURI">
+                            <xsd:attributeGroup ref="phpVersionGroup"/>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:group>
+
+    <xsd:complexType name="testSuiteType">
+        <xsd:choice  minOccurs="0" maxOccurs="unbounded">
+            <xsd:group ref="pathGroup"/>
+            <xsd:element name="exclude" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Path to exclude</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:choice>
+        <xsd:attribute name="name" type="xsd:string" default="">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Testsuite name &lt;br /&gt;&lt;br /&gt; Default: ''</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="testSuitesType">
+        <xsd:sequence>
+            <xsd:element name="testsuite" type="testSuiteType" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!--Groups element-->
+    <xsd:complexType name="groupType">
+        <xsd:sequence>
+            <xsd:element name="group" type="xsd:string" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Name of the group specified with @group</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="groupsType">
+        <xsd:all>
+            <xsd:element name="include" type="groupType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Groups of tests to be included</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="exclude" type="groupType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Groups of tests to be excluded</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:all>
+    </xsd:complexType>
+
+    <!--Filters element-->
+    <xsd:complexType name="filtersType">
+        <xsd:all>
+            <xsd:element name="blacklist" type="filterType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The blacklist is pre-filled with all sourcecode files of PHPUnit itself as well as the tests. When the whitelist is empty (default), blacklisting is used.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="whitelist" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">When the whitelist is not empty, whitelisting is used. Each file on the whitelist is added to the code coverage report regardless of whether or not it was executed. All lines of such a file, including those that are not executable, are counted as not executed.</xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:complexContent>
+                        <xsd:extension base="filterType">
+                            <xsd:attribute type="Boolean" name="addUncoveredFilesFromWhitelist" default="true">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">Processes whitelisted files that are not covered. &lt;br /&gt;&lt;br /&gt; Default: true</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute type="Boolean" name="processUncoveredFilesFromWhitelist" default="false">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">When you set processUncoveredFilesFromWhitelist="true" in your PHPUnit configuration (see the section called “Including and Excluding Files for Code Coverage”) then these files will be included by PHP_CodeCoverage to properly calculate the number of executable lines. &lt;br /&gt;&lt;br /&gt; Default: false</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                        </xsd:extension>
+                    </xsd:complexContent>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:all>
+    </xsd:complexType>
+
+    <xsd:complexType name="filterType">
+        <xsd:sequence>
+            <xsd:group ref="filterPathGroup"/>
+            <xsd:element name="exclude" maxOccurs="unbounded" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Exclude directories or files from white/blacklist</xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:group ref="filterPathGroup"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:group name="filterPathGroup">
+        <xsd:sequence>
+            <xsd:element name="directory" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Directory to filter</xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="xsd:anyURI">
+                            <xsd:attribute type="xsd:string" name="prefix" default="">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">Filter files which begin with the specified prefix &lt;br /&gt;&lt;br /&gt; Default: ''</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute type="xsd:string" name="suffix" default=".php">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">Filter files which end with the specified suffix &lt;br /&gt;&lt;br /&gt; Default: '.php'</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                            <xsd:attribute type="xsd:string" name="group" default="DEFAULT">
+                                <xsd:annotation>
+                                    <xsd:documentation xml:lang="en">Filter files which belong to the specified group &lt;br /&gt;&lt;br /&gt; Default: 'DEFAULT'</xsd:documentation>
+                                </xsd:annotation>
+                            </xsd:attribute>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="file" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">File to filter</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:group>
+
+    <!--Loggers element-->
+    <xsd:complexType name="loggerType">
+        <xsd:attribute name="type" use="required">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Type of log/coverage report</xsd:documentation>
+            </xsd:annotation>
+            <xsd:simpleType>
+                <xsd:restriction base="xsd:string">
+                    <xsd:enumeration value="coverage-html"/>
+                    <xsd:enumeration value="coverage-clover"/>
+                    <xsd:enumeration value="coverage-php"/>
+                    <xsd:enumeration value="coverage-text"/>
+                    <xsd:enumeration value="coverage-crap4j"/>
+                    <xsd:enumeration value="coverage-xml"/>
+                    <xsd:enumeration value="json"/>
+                    <xsd:enumeration value="plain"/>
+                    <xsd:enumeration value="tap"/>
+                    <xsd:enumeration value="junit"/>
+                    <xsd:enumeration value="testdox-html"/>
+                    <xsd:enumeration value="testdox-text"/>
+                </xsd:restriction>
+            </xsd:simpleType>
+        </xsd:attribute>
+        <xsd:attribute name="target" type="xsd:anyURI" use="required">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Target directory/file for logger report</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="lowUpperBound" type="xsd:nonNegativeInteger" default="35">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Maximum coverage percentage to be considered "lowly" covered.
+                    Only supported for cover-html. &lt;br /&gt;&lt;br /&gt; Default: 35
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="highLowerBound" type="xsd:nonNegativeInteger" default="70">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Minimum coverage percentage to be considered "highly" covered.
+                    Only supported for cover-html type.&lt;br /&gt;&lt;br /&gt; Default: 70
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="logIncompleteSkipped" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Logs incomplete or skipped tests. Only supported for junit type. &lt;br /&gt;&lt;br /&gt; Default: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="showUncoveredFiles" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Show all whitelisted files in coverage-text output not just the ones with
+                    coverage information. Only supported for coverage-text type. &lt;br /&gt;&lt;br /&gt; Default: false
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="showOnlySummary" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Show only the summary in coverage-text output.
+                    Only supported for coverage-text type. &lt;br /&gt;&lt;br /&gt; Default: false
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="loggersType">
+        <xsd:sequence>
+            <xsd:element name="log" type="loggerType" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Logger definition.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!--Listeners element-->
+    <xsd:group name="argumentGroup">
+        <xsd:choice>
+            <xsd:element name="array" type="arrayType">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Array argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="integer" type="xsd:integer">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Integer argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="string" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">String argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="double" type="xsd:double">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Double argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="boolean" type="xsd:boolean">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Boolean argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="null">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">NULL argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="object" type="objectType">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Object argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="file" type="xsd:anyURI">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">File path argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="directory" type="xsd:anyURI">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Directory path argument</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:group>
+
+    <xsd:complexType name="arrayElementType">
+        <xsd:group ref="argumentGroup"/>
+        <xsd:attribute name="key">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Array element key</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="arrayType">
+        <xsd:sequence>
+            <xsd:element name="element" type="arrayElementType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Array element</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="objectType">
+        <xsd:sequence>
+            <xsd:element name="arguments" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Object arguments</xsd:documentation>
+                </xsd:annotation>
+                <xsd:complexType>
+                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                        <xsd:group ref="argumentGroup"></xsd:group>
+                    </xsd:choice>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="class" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Class name of the object</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="file" type="xsd:anyURI">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Path to the class of the object</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="listenersType">
+        <xsd:sequence>
+            <xsd:element name="listener" type="objectType" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Test listener configuration.&lt;br /&gt;&lt;br /&gt;Example:  class="MyListener" file="/optional/path/to/MyListener.php"</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!--PHP element-->
+    <xsd:complexType name="namedValueType">
+        <xsd:attribute name="name" use="required" type="xsd:string"/>
+        <xsd:attribute name="value" use="required" type="xsd:anySimpleType"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="phpType">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="includePath" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Prepends specified path to the include_path</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="ini" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: ini_set('foo', 'bar');</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="const" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: define('foo', 'bar');</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="var" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $GLOBALS['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="env" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_ENV['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="post" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_POST['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="get" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_GET['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="cookie" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_COOKIE['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="server" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_SERVER['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="files" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_FILES['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="request" type="namedValueType" minOccurs="0" maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Corresponds to: $_REQUEST['foo'] = 'bar';</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <!--Selenium element-->
+    <xsd:complexType name="browserType">
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Name for the browser configuration.&lt;br /&gt;&lt;br /&gt;Example: name="Firefox on Linux"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="browser" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Set the browser to be used by the Selenium Server server.&lt;br /&gt;&lt;br /&gt;Example: browser="*firefox /usr/lib/firefox/firefox-bin"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="host" type="xsd:anyURI" default="localhost">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Set the hostname for the connection to the Selenium Server server.&lt;br /&gt;&lt;br /&gt;Default: localhost</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="port" type="xsd:nonNegativeInteger" default="4444">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Set the port for the connection to the Selenium Server server.&lt;br /&gt;&lt;br /&gt; Default: 4444</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="timeout" type="xsd:nonNegativeInteger" default="30000">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Set the timeout for the connection to the Selenium Server server.&lt;br /&gt;&lt;br /&gt;Default: 30000</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="seleniumType">
+        <xsd:sequence>
+            <xsd:element name="browser" type="browserType"  maxOccurs="unbounded">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">Browser configuration</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!--Root element children group-->
+    <xsd:group name="phpUnitTypeChildrenGroup">
+        <xsd:all>
+            <xsd:element name="testsuites" type="testSuitesType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The testsuites element and its one or more testsuite children can be used to compose a test suite out of test suites and test cases.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="groups" type="groupsType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The groups element and its include, exclude, and group children can be used to select groups of tests marked with the @group annotation (documented in the section called “@group”) that should (not) be run.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="filter" type="filtersType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The filter element and its children can be used to configure the blacklist and whitelist for the code coverage reporting.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="logging" type="loggersType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The logging element and its log children can be used to configure the logging of the test execution.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="listeners" type="listenersType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The listeners element and its listener children can be used to attach additional test listeners to the test execution.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="php" type="phpType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The php element and its children can be used to configure PHP settings, constants, and global variables. It can also be used to prepend the include_path.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="selenium" type="seleniumType" minOccurs="0">
+                <xsd:annotation>
+                    <xsd:documentation xml:lang="en">The selenium element and its browser children can be used to configure a list of Selenium RC servers.</xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:all>
+    </xsd:group>
+
+    <!--Root element attributes-->
+    <xsd:attributeGroup name="phpUnitTypeAttributesGroup">
+        <xsd:attribute name="backupGlobals" type="Boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Backup and restore $GLOBALS for each test &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: true</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="backupStaticAttributes" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Backup and restore static attributes for each test. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="beStrictAboutTestsThatDoNotTestAnything" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Be strict about tests that do not test anything. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="beStrictAboutOutputDuringTests" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Be strict about output during tests. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="beStrictAboutTestSize" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Be strict about test size. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="bootstrap" type="xsd:anyURI">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">A "bootstrap" PHP file that is run before the tests. &lt;br /&gt;&lt;br /&gt; Example: bootstrap="/path/to/bootstrap.php"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="cacheTokens" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Enable or disable the caching of PHP_Token_Stream object (used in code coverage). &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="checkForUnintentionallyCoveredCode" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">To enable the strict coverage mode set checkForUnintentionallyCoveredCode to true. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="colors" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Use colors in output. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="convertErrorsToExceptions" type="Boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">By default, PHPUnit will install an error handler that converts the following errors to exceptions: &lt;br /&gt;
+                    E_WARNING, E_NOTICE, E_USER_ERROR, E_USER_WARNING, E_USER_NOTICE, E_STRICT, E_RECOVERABLE_ERROR, E_DEPRECATED, E_USER_DEPRECATED. &lt;br /&gt;
+                    Set convertErrorsToExceptions to false to disable this feature. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: true
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="convertNoticesToExceptions" type="Boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">When set to false, the error handler installed by convertErrorsToExceptions will not convert E_NOTICE, E_USER_NOTICE,
+                    or E_STRICT errors to exceptions. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: true
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="convertWarningsToExceptions" type="Boolean" default="true">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">When set to false, the error handler installed by convertErrorsToExceptions will not convert E_WARNING
+                    or E_USER_WARNING errors to exceptions. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: true
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="forceCoversAnnotation" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Code Coverage will only be recorded for tests that use the @covers annotation documented in the section called “@covers”. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="mapTestClassNameToCoveredClassName" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">When set to true the coverage will be restricted to only the class that has the same name (less the suffix "Test") as the test class. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="printerClass" type="xsd:string" default="PHPUnit_TextUI_ResultPrinter">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Result printer class.&lt;br /&gt;&lt;br /&gt; Example:&lt;br /&gt; printerClass="PHPUnit_TextUI_ResultPrinter"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="printerFile" type="xsd:anyURI">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Path to the result printer class.&lt;br /&gt;&lt;br /&gt; Example:&lt;br /&gt; printerFile="/path/to/ResultPrinter.php"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="processIsolation" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Run each test in a separate PHP process. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stderr" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Write to STDERR instead of STDOUT. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stopOnError" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Stop execution upon first error. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stopOnFailure" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Stop execution upon first error or failure. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stopOnIncomplete" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Stop execution upon first incomplete test. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stopOnRisky" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Stop execution upon first risky test. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="stopOnSkipped" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Stop execution upon first skipped test. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="strict" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Run tests in strict mode. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="testSuiteLoaderClass" type="xsd:string" default="PHPUnit_Runner_StandardTestSuiteLoader">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">TestSuiteLoader implementation to use. &lt;br /&gt;&lt;br /&gt; Example:&lt;br /&gt; testSuiteLoaderClass="PHPUnit_Runner_StandardTestSuiteLoader"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="testSuiteLoaderFile" type="xsd:anyURI">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Path to the TestSuiteLoader implementation.&lt;br /&gt;&lt;br /&gt; Example:&lt;br /&gt; testSuiteLoaderClass="/path/to/TestSuiteLoader.php"</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="timeoutForSmallTests" type="xsd:positiveInteger" default="1">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">If the PHP_Invoker package is installed and strict mode is enabled, this attribute sets the timeout for all
+                    tests not marked as @medium or @large. If a test does not complete within this configured timeout, it will fail. &lt;br /&gt;&lt;br /&gt; Default: 1
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="timeoutForMediumTests" type="xsd:positiveInteger" default="10">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">If the PHP_Invoker package is installed and strict mode is enabled, this attribute sets the timeout for all tests marked as @medium.
+                    If a test does not complete within this configured timeout, it will fail. &lt;br /&gt;&lt;br /&gt; Default: 10
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="timeoutForLargeTests" type="xsd:positiveInteger" default="60">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">If the PHP_Invoker package is installed and strict mode is enabled, this attribute sets the timeout for all tests marked as @large.
+                    If a test does not complete within this configured timeout, it will fail. &lt;br /&gt;&lt;br /&gt; Default: 60
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="verbose" type="Boolean" default="false">
+            <xsd:annotation>
+                <xsd:documentation xml:lang="en">Output more verbose information. &lt;br /&gt;&lt;br /&gt; Value: true|false  &lt;br /&gt; Default value: false</xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:attributeGroup>
+
+    <!--Root Element type definition-->
+    <xsd:complexType name="phpUnitType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">The main type specifying the document structure</xsd:documentation>
+        </xsd:annotation>
+        <xsd:group ref="phpUnitTypeChildrenGroup"/>
+        <xsd:attributeGroup ref="phpUnitTypeAttributesGroup" />
+    </xsd:complexType>
+
+    <!--Root element-->
+    <xsd:element name="phpunit" type="phpUnitType">
+        <xsd:annotation>
+            <xsd:documentation xml:lang="en">Root element</xsd:documentation>
+        </xsd:annotation>
+    </xsd:element>
+</xsd:schema>

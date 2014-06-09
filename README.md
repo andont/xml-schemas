@@ -1,2 +1,2 @@
-xml-schemas
+XML collection of schemas
 ===========
